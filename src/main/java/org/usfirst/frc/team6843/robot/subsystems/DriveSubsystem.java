@@ -30,7 +30,9 @@ import edu.wpi.first.wpilibj.drive.DifferentialDrive;
  * An example subsystem. You can replace me with your own Subsystem.
  */
 public class DriveSubsystem extends Subsystem implements PIDOutput {
-	// public OI oi;
+	/** Suggested rotate in place velocity base for PID output math. */
+	public static final double ROTATE_VELOCITY_BASE = 1000.0;
+
 	private final AHRS gyro = new AHRS(SPI.Port.kMXP); // NAVX MXP gyroscope
 	private final PIDController turnController = new PIDController(0.2, 0.0, 0.0, gyro, this);
 	//private final PIDController distController = new PIDController(0.2, 0.0, 0.0, source, output);
@@ -120,9 +122,6 @@ public class DriveSubsystem extends Subsystem implements PIDOutput {
 		SmartDashboard.putNumber("Gyro", gyro.getYaw());
 	}
 
-	// public double target() {
-	// return 1000 * this.oi.getVertAxis();
-	// }
 	public double getLeftPosition() {
 		double leftRawPos = leftMotor1.getSelectedSensorPosition(0);
 		double leftUnitPos = leftRawPos / 1440;
@@ -165,7 +164,6 @@ public class DriveSubsystem extends Subsystem implements PIDOutput {
 	}
 
 	public void stop() {
-		// drive.arcadeDrive(0.0, 0.0);
 		leftMotor1.set(ControlMode.Velocity, 0);
 		rightMotor1.set(ControlMode.Velocity, 0);
 

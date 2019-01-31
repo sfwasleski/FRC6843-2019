@@ -7,15 +7,15 @@
 
 package org.usfirst.frc.team6843.robot;
 
+import java.util.logging.Logger;
+
+import org.usfirst.frc.team6843.robot.commands.DriveForward;
+import org.usfirst.frc.team6843.robot.subsystems.DriveSubsystem;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-
-import java.util.logging.Logger;
-
-import org.usfirst.frc.team6843.robot.commands.ExampleCommand;
-import org.usfirst.frc.team6843.robot.subsystems.DriveSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -49,7 +49,7 @@ public class Robot extends TimedRobot {
 		this.logger = Logger.getLogger(this.getClass().getName());
 		this.driveSubsystem = new DriveSubsystem();
 		this.oi = new OI();
-		auto_chooser.setDefaultOption("Default Auto", new ExampleCommand());
+		auto_chooser.setDefaultOption("Default Auto", new DriveForward());
 		// chooser.addObject("My Auto", new MyAutoCommand());
 		// SmartDashboard.putData("Auto mode", auto_chooser);
 

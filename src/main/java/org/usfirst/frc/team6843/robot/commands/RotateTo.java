@@ -12,33 +12,29 @@ import org.usfirst.frc.team6843.robot.subsystems.DriveSubsystem;
 
 import edu.wpi.first.wpilibj.command.Command;
 
-public class RotateRight extends Command {
+public class RotateTo extends Command {
 
-  protected final DriveSubsystem driveSubsystem;
+  private final DriveSubsystem driveSubsystem;
+  private final double targetHeading;
 
-  public RotateRight() {
+  public RotateTo(double targetHeading) {
     // Use requires() here to declare subsystem dependencies
     // eg. requires(chassis);
     this.driveSubsystem = Robot.getInstance().getDriveSubsystem();
-        requires(this.driveSubsystem);
+    requires(this.driveSubsystem);
+    this.targetHeading = targetHeading;
   }
 
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-    this.driveSubsystem.startTurn(driveSubsystem.getGyroAngle()+ 90.0);
+    this.driveSubsystem.startTurn(this.targetHeading);
   }
 
   // Called repeatedly when this Command is scheduled to run
   @Override
   protected void execute() {
-    double speed = 1000.0 * this.driveSubsystem.getGyroTurnRate();
-    //if(speed >= 0){
-    //  speed += 200;
-    //}
-    //else{
-    //  speed -= 200;
-    //}
+    double speed = DriveSubsystem.ROTATE_VELOCITY_BASE * this.driveSubsystem.getGyroTurnRate();
     this.driveSubsystem.encoderTest(speed, speed);
   }
 
@@ -46,7 +42,7 @@ public class RotateRight extends Command {
   @Override
   protected boolean isFinished() {
     return this.driveSubsystem.isTurnOnTarget();
-  
+
   }
 
   // Called once after isFinished returns true

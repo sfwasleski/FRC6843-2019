@@ -7,15 +7,11 @@
 
 package org.usfirst.frc.team6843.robot;
 
-import org.usfirst.frc.team6843.robot.commands.ClearEncoders;
 import org.usfirst.frc.team6843.robot.commands.DistDrive;
 import org.usfirst.frc.team6843.robot.commands.DistDriveRev;
-import org.usfirst.frc.team6843.robot.commands.ExampleCommand;
-import org.usfirst.frc.team6843.robot.commands.RightTurn;
-import org.usfirst.frc.team6843.robot.commands.RightTurnn;
-import org.usfirst.frc.team6843.robot.commands.RotateRight;
+import org.usfirst.frc.team6843.robot.commands.RotateTo;
 
-import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 
@@ -24,39 +20,28 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
  * interface to the commands and command groups that allow control of the robot.
  */
 public class OI {
-	Joystick gamepad = new Joystick(0);
-	Button buttonA = new JoystickButton(gamepad, 1);
-	Button buttonB = new JoystickButton(gamepad, 2);
-	Button buttonX = new JoystickButton(gamepad, 3);
-	Button buttonY = new JoystickButton(gamepad, 4);
-	Button buttonLB = new JoystickButton(gamepad, 5);
-	Button buttonRB = new JoystickButton(gamepad, 6);
-	Button buttonBack = new JoystickButton(gamepad, 7);
-	Button buttonStart = new JoystickButton(gamepad, 8);
-	Button buttonLJoyClick = new JoystickButton(gamepad, 9);
-	Button buttonRJoyClick = new JoystickButton(gamepad, 10);
-	Button button11 = new JoystickButton(gamepad, 11);
-	Button button12 = new JoystickButton(gamepad, 12);
-	
+	private final XboxController driver = new XboxController(0);
+	private final Button driverY = new JoystickButton(driver, 4);
+	private final Button driverB = new JoystickButton(driver, 2);
+	private final Button driverA = new JoystickButton(driver, 1);
+	private final Button driverX = new JoystickButton(driver, 3);
+	private final Button driverBumperLeft = new JoystickButton(driver, 5);
+	private final Button driverBumperRight = new JoystickButton(driver, 6);
+
 	public OI() {
-		//buttonLB.whileHeld(new ExampleCommand());
-		buttonA.whileHeld(new DistDrive());
-		buttonB.whileHeld(new DistDriveRev());
-		buttonY.whenPressed( new RotateRight());
-		//buttonA.whenPressed(new ClearEncoders());
-		//buttonY.whileHeld(new RightTurn());
-		//buttonB.whenPressed(new RightTurnn());
-	}
-	
-	public double getVertAxis() {
-		return gamepad.getRawAxis(1);
-	}
-	
-	public double getHorizAxis() {
-		return gamepad.getRawAxis(4);
+		driverY.whenPressed(new RotateTo(0.0));
+		driverB.whenPressed(new RotateTo(90.0));
+		driverA.whenPressed(new RotateTo(180.0));
+		driverX.whenPressed(new RotateTo(-90.0));
+		driverBumperLeft.whileHeld(new DistDrive());
+		driverBumperRight.whileHeld(new DistDriveRev());
 	}
 
-	public double getTarget() {
-		return getVertAxis() * 1000;
+	public double getVertAxis() {
+		return driver.getRawAxis(1);
 	}
+
+	public double getHorizAxis() {
+		return driver.getRawAxis(4);
 	}
+}
