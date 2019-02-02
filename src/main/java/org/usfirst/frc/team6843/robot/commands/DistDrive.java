@@ -23,12 +23,12 @@ public class DistDrive extends Command {
     protected void initialize() {
     		super.initialize();
 		this.oi = Robot.getInstance().getOI();
-		this.driveSubsystem.ClearEncoders();
+		this.driveSubsystem.clearEncoders();
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() { 
-    		this.driveSubsystem.encoderTest(1000, -1000);
+    		this.driveSubsystem.velocityDrive(1000, -1000);
     }
 
     // Make this return true when this Command no longer needs to run execute()

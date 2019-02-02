@@ -35,7 +35,7 @@ public class RotateTo extends Command {
   @Override
   protected void execute() {
     double speed = DriveSubsystem.ROTATE_VELOCITY_BASE * this.driveSubsystem.getGyroTurnRate();
-    this.driveSubsystem.encoderTest(speed, speed);
+    this.driveSubsystem.velocityDrive(speed, speed);
   }
 
   // Make this return true when this Command no longer needs to run execute()

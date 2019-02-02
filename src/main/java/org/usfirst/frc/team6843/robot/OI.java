@@ -20,6 +20,11 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
  * interface to the commands and command groups that allow control of the robot.
  */
 public class OI {
+	/** Used to enforce drive stick dead zones. */
+	public static final double DEAD_ZONE = 0.1;
+	public static final int DRIVE_AXIS = 1;
+	public static final int CURVE_AXIS = 4;
+
 	private final XboxController driver = new XboxController(0);
 	private final Button driverY = new JoystickButton(driver, 4);
 	private final Button driverB = new JoystickButton(driver, 2);
@@ -37,11 +42,21 @@ public class OI {
 		driverBumperRight.whileHeld(new DistDriveRev());
 	}
 
-	public double getVertAxis() {
-		return driver.getRawAxis(1);
+	public double getDrivePower() {
+		double drivePower = driver.getRawAxis(DRIVE_AXIS);
+		if (Math.abs(drivePower) < DEAD_ZONE)
+		{
+			drivePower = 0.0;
+		}
+		return drivePower;
 	}
 
-	public double getHorizAxis() {
-		return driver.getRawAxis(4);
+	public double getCurvePower() {
+		double curvePower = driver.getRawAxis(CURVE_AXIS);
+		if (Math.abs(curvePower) < DEAD_ZONE)
+		{
+			curvePower = 0.0;
+		}
+		return curvePower;
 	}
 }

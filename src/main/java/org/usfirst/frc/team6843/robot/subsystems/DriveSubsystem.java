@@ -7,35 +7,59 @@
 
 package org.usfirst.frc.team6843.robot.subsystems;
 
-import org.usfirst.frc.team6843.robot.RobotMap;
-import org.usfirst.frc.team6843.robot.commands.JoystickTankDrive;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 import com.kauailabs.navx.frc.AHRS;
+
+import org.usfirst.frc.team6843.robot.RobotMap;
+import org.usfirst.frc.team6843.robot.commands.JoystickTankDrive;
 
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
+import edu.wpi.first.wpilibj.PIDSource;
+import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.SPI;
-
 import edu.wpi.first.wpilibj.command.Subsystem;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- * An example subsystem. You can replace me with your own Subsystem.
+ * The drive subsystem uses the Talon on board PID to control the speed of all
+ * driving. It uses on RIO PID controllers to track headings and distances.
  */
-public class DriveSubsystem extends Subsystem implements PIDOutput {
+public class DriveSubsystem extends Subsystem {
 	/** Suggested rotate in place velocity base for PID output math. */
 	public static final double ROTATE_VELOCITY_BASE = 1000.0;
 
-	private final AHRS gyro = new AHRS(SPI.Port.kMXP); // NAVX MXP gyroscope
-	private final PIDController turnController = new PIDController(0.2, 0.0, 0.0, 0.0, gyro, this);
-	//private final PIDController distController = new PIDController(0.2, 0.0, 0.0, source, output);
+	/** Holds the last PID calculated turn rate. */
+	private double gyroTurnRate = 0.0;
+	/** Our NavX MXP gyro used as PID input for turns. */
+	private final AHRS gyro = new AHRS(SPI.Port.kMXP);
+	/** The output target for the turn PID Controller. */
+	private final PIDOutput turnPidOutput = new PIDOutput() {
+		@Override
+		public void pidWrite(double output) {
+			gyroTurnRate = output;
+		}
+	};
+	/** The turn PID controller using the above gyro and PID output. */
+	private final PIDController turnController = new PIDController(0.2, 0.0, 0.0, 0.0, gyro, turnPidOutput);
+
+	/** The target distance in encoder clicks. */
+	private int distTarget = 0;
+	/** Holds the last PID calculated distance drive velocity. */
+	private double distDriveRate = 0.0;
+	private PIDSource distDriveSource = new DistDrivePIDSource();
+	private PIDOutput distDriveOutput = new PIDOutput() {
+		@Override
+		public void pidWrite(double output) {
+			distDriveRate = output;
+		}
+	};
+	private final PIDController distController = new PIDController(0.01, 0.0, 0.0, 0.0, distDriveSource,
+			distDriveOutput);
 
 	private final WPI_TalonSRX leftMotor1 = new WPI_TalonSRX(RobotMap.LEFT_MOTOR_1);
 	// private final WPI_TalonSRX leftMotor2 = new
@@ -45,12 +69,13 @@ public class DriveSubsystem extends Subsystem implements PIDOutput {
 	// WPI_TalonSRX(RobotMap.RIGHT_MOTOR_2);
 	private final DifferentialDrive drive = new DifferentialDrive(leftMotor1, rightMotor1);
 
-	private double gyroTurnRate = 0.0;
 	// leftEncoderVelocity 1080
 	// rightEncoderVelocity 1080
 
+	/**
+	 * Creates the components of the subsystem and initialized them all.
+	 */
 	public DriveSubsystem() {
-
 		rightMotor1.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 100);
 		rightMotor1.setSensorPhase(true);
 		// set the peak, nominal outputs, and deadband
@@ -90,11 +115,6 @@ public class DriveSubsystem extends Subsystem implements PIDOutput {
 		turnController.disable();
 	}
 
-	@Override
-	public void pidWrite(double output) {
-		gyroTurnRate = output;
-	}
-
 	public double getGyroTurnRate() {
 		return gyroTurnRate;
 	}
@@ -129,7 +149,7 @@ public class DriveSubsystem extends Subsystem implements PIDOutput {
 		return leftInchPos;
 	}
 
-	public void ClearEncoders() {
+	public void clearEncoders() {
 		rightMotor1.setSelectedSensorPosition(0, 0, 100);
 		leftMotor1.setSelectedSensorPosition(0, 0, 100);
 
@@ -154,7 +174,7 @@ public class DriveSubsystem extends Subsystem implements PIDOutput {
 		setDefaultCommand(new JoystickTankDrive());
 	}
 
-	public void encoderTest(double leftPower, double rightPower) {
+	public void velocityDrive(double leftPower, double rightPower) {
 		leftMotor1.set(ControlMode.Velocity, leftPower);
 		rightMotor1.set(ControlMode.Velocity, rightPower);
 	}
@@ -167,5 +187,27 @@ public class DriveSubsystem extends Subsystem implements PIDOutput {
 		leftMotor1.set(ControlMode.Velocity, 0);
 		rightMotor1.set(ControlMode.Velocity, 0);
 
+	}
+
+	/**
+	 * A distance drive PID source that returns raw clicks remaining.
+	 */
+	private class DistDrivePIDSource implements PIDSource {
+		@Override
+		public void setPIDSourceType(PIDSourceType pidSource) {
+		}
+
+		@Override
+		public double pidGet() {
+			int leftRawPos = leftMotor1.getSelectedSensorPosition(0);
+			int rightRawPos = -rightMotor1.getSelectedSensorPosition(0);
+			int aveRawPos = (leftRawPos + rightRawPos) / 2;
+			return distTarget - aveRawPos;
+		}
+
+		@Override
+		public PIDSourceType getPIDSourceType() {
+			return PIDSourceType.kDisplacement;
+		}
 	}
 }
