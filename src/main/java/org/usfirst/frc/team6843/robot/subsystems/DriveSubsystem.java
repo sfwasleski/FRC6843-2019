@@ -34,7 +34,7 @@ public class DriveSubsystem extends Subsystem implements PIDOutput {
 	public static final double ROTATE_VELOCITY_BASE = 1000.0;
 
 	private final AHRS gyro = new AHRS(SPI.Port.kMXP); // NAVX MXP gyroscope
-	private final PIDController turnController = new PIDController(0.2, 0.0, 0.0, gyro, this);
+	private final PIDController turnController = new PIDController(0.2, 0.0, 0.0, 0.0, gyro, this);
 	//private final PIDController distController = new PIDController(0.2, 0.0, 0.0, source, output);
 
 	private final WPI_TalonSRX leftMotor1 = new WPI_TalonSRX(RobotMap.LEFT_MOTOR_1);
@@ -109,7 +109,7 @@ public class DriveSubsystem extends Subsystem implements PIDOutput {
 
 	public void startTurn(double targetAngle) {
 		turnController.enable();
-		turnController.setSetpoint(Math.IEEEremainder(targetAngle, 180.0));
+		turnController.setSetpoint(targetAngle);
 
 	}
 
