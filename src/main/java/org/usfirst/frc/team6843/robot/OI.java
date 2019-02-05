@@ -47,21 +47,27 @@ public class OI {
 		driverStart.whenPressed(new DriveTo(100));
 	}
 
+	/**
+	 * @return the drive power using cubed inputs.
+	 */
 	public double getDrivePower() {
-		double drivePower = driver.getRawAxis(DRIVE_AXIS);
+		double drivePower = -driver.getRawAxis(DRIVE_AXIS);
 		if (Math.abs(drivePower) < DEAD_ZONE)
 		{
 			drivePower = 0.0;
 		}
-		return drivePower;
+		return Math.pow(drivePower, 3.0);
 	}
 
+	/**
+	 * @return the drive power using inputs to the fifth.
+	 */
 	public double getCurvePower() {
 		double curvePower = driver.getRawAxis(CURVE_AXIS);
 		if (Math.abs(curvePower) < DEAD_ZONE)
 		{
 			curvePower = 0.0;
 		}
-		return curvePower;
+		return Math.pow(curvePower, 5.0);
 	}
 }

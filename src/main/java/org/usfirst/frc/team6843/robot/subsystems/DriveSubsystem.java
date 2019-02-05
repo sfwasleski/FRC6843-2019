@@ -22,7 +22,6 @@ import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.command.Subsystem;
-import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
@@ -70,10 +69,6 @@ public class DriveSubsystem extends Subsystem {
 	private final WPI_TalonSRX rightMotor1 = new WPI_TalonSRX(RobotMap.RIGHT_MOTOR_1);
 	// private final WPI_TalonSRX rightMotor2 = new
 	// WPI_TalonSRX(RobotMap.RIGHT_MOTOR_2);
-	private final DifferentialDrive drive = new DifferentialDrive(leftMotor1, rightMotor1);
-
-	// leftEncoderVelocity 1080
-	// rightEncoderVelocity 1080
 
 	/**
 	 * Creates the components of the subsystem and initialized them all.
@@ -139,7 +134,8 @@ public class DriveSubsystem extends Subsystem {
 	}
 
 	/**
-	 * @return true if the turn PID controller reports we are within our turn tolerance.
+	 * @return true if the turn PID controller reports we are within our turn
+	 *         tolerance.
 	 */
 	public boolean isTurnOnTarget() {
 		return turnController.onTarget();
@@ -147,6 +143,7 @@ public class DriveSubsystem extends Subsystem {
 
 	/**
 	 * Used to initiate a gyro/PID controlled turn.
+	 * 
 	 * @param targetAngle the absolute field relative target angle.
 	 */
 	public void startTurn(double targetAngle) {
@@ -162,29 +159,37 @@ public class DriveSubsystem extends Subsystem {
 		this.gyroTurnRate = 0.0;
 	}
 
-	public void startDistance(double distanceInInches)
-	{
+	/**
+	 * Used to initiate a PID controlled straight drive a distance in inches.
+	 */
+	public void startDistance(double distanceInInches) {
 		this.distTarget = distanceInInches / 18.85 * 1440.0;
 		clearEncoders();
 		distController.enable();
 		distController.setSetpoint(this.distTarget);
 	}
 
+	/**
+	 * @return the last calculated drive straight distance rate [-velocity, +velocity]
+	 */
 	public double getDistDriveRate() {
 		return this.distDriveRate;
 	}
 
 	/**
-	 * @return true if the distance PID controller reports we are within our tolerance.
+	 * @return true if the distance PID controller reports we are within our
+	 *         tolerance.
 	 */
 	public boolean isDistOnTarget() {
-		if (distController.isEnabled())
-		{
+		if (distController.isEnabled()) {
 			return distController.onTarget();
 		}
 		return true;
 	}
 
+	/**
+	 * Used to stop (normally or otherwise) a PID controlled straight drive distance.
+	 */
 	public void endDistance() {
 		distController.reset();
 		this.distTarget = 0.0;
@@ -215,21 +220,6 @@ public class DriveSubsystem extends Subsystem {
 		leftMotor1.setSelectedSensorPosition(0, 0, 100);
 	}
 
-	public double getRightPosition() {
-		double rightRawPos = -rightMotor1.getSelectedSensorPosition(0);
-		double rightUnitPos = rightRawPos / 1440;
-		double rightInchPos = rightUnitPos * 18.85;
-		return rightInchPos;
-	}
-
-	public double getLeftVelocity() {
-		return leftMotor1.getSelectedSensorVelocity(0);
-	}
-
-	public double getRightVelocity() {
-		return rightMotor1.getSelectedSensorVelocity(0);
-	}
-
 	/**
 	 * Called by the system so that we can establish our default command.
 	 */
@@ -240,7 +230,8 @@ public class DriveSubsystem extends Subsystem {
 
 	/**
 	 * Used to drive and known left and right velocities via PID.
-	 * @param leftVelocity the velocity for the left side (clicks / sec ?)
+	 * 
+	 * @param leftVelocity  the velocity for the left side (clicks / sec ?)
 	 * @param rightVelocity the velocity for the right side (clicks / sec ?)
 	 */
 	public void velocityDrive(double leftVelocity, double rightVelocity) {
@@ -248,8 +239,36 @@ public class DriveSubsystem extends Subsystem {
 		rightMotor1.set(ControlMode.Velocity, rightVelocity);
 	}
 
+	/**
+	 * Used for arcade type driving under velocity PID control.
+	 */
 	public void arcadeDrive(double power, double curve) {
-		drive.arcadeDrive((-1 * power), (1 * curve));
+		double leftMotorOutput = 0.0;
+		double rightMotorOutput = 0.0;
+
+		double maxInput = Math.copySign(Math.max(Math.abs(power), Math.abs(curve)), power);
+
+		if (power >= 0.0) {
+			// First quadrant, else second quadrant
+			if (curve >= 0.0) {
+				leftMotorOutput = maxInput;
+				rightMotorOutput = power - curve;
+			} else {
+				leftMotorOutput = power + curve;
+				rightMotorOutput = maxInput;
+			}
+		} else {
+			// Third quadrant, else fourth quadrant
+			if (curve >= 0.0) {
+				leftMotorOutput = power + curve;
+				rightMotorOutput = maxInput;
+			} else {
+				leftMotorOutput = maxInput;
+				rightMotorOutput = power - curve;
+			}
+		}
+
+		velocityDrive(leftMotorOutput * 1500.0, rightMotorOutput * -1500.0);
 	}
 
 	/**
@@ -271,8 +290,8 @@ public class DriveSubsystem extends Subsystem {
 		public double pidGet() {
 			int leftRawPos = leftMotor1.getSelectedSensorPosition(0);
 			// right broken on old bot ... put back later
-			//int rightRawPos = -rightMotor1.getSelectedSensorPosition(0);
-			//int aveRawPos = (leftRawPos + rightRawPos) / 2;
+			// int rightRawPos = -rightMotor1.getSelectedSensorPosition(0);
+			// int aveRawPos = (leftRawPos + rightRawPos) / 2;
 			int aveRawPos = leftRawPos;
 			return aveRawPos;
 		}
