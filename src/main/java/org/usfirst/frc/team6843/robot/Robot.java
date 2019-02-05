@@ -9,7 +9,7 @@ package org.usfirst.frc.team6843.robot;
 
 import java.util.logging.Logger;
 
-import org.usfirst.frc.team6843.robot.commands.DriveForward;
+import org.usfirst.frc.team6843.robot.commands.DriveTo;
 import org.usfirst.frc.team6843.robot.subsystems.DriveSubsystem;
 
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -30,7 +30,7 @@ public class Robot extends TimedRobot {
 	private DriveSubsystem driveSubsystem;
 	private OI oi;
 	private Logger logger;
-	private SendableChooser<Command> auto_chooser = new SendableChooser<>();
+	private SendableChooser<Command> auto_chooser;
 	private Command autonomousCommand;
 
 	/**
@@ -49,7 +49,10 @@ public class Robot extends TimedRobot {
 		this.logger = Logger.getLogger(this.getClass().getName());
 		this.driveSubsystem = new DriveSubsystem();
 		this.oi = new OI();
-		auto_chooser.setDefaultOption("Default Auto", new DriveForward());
+		this.auto_chooser = new SendableChooser<>();
+		this.auto_chooser.setName("Auto");
+		this.auto_chooser.setDefaultOption("Drive 3 pts", new DriveTo(50.0));
+		this.auto_chooser.addOption("Drive too far", new DriveTo(100.0));
 		// chooser.addObject("My Auto", new MyAutoCommand());
 		// SmartDashboard.putData("Auto mode", auto_chooser);
 

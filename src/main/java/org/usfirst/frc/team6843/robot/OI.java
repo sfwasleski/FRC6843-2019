@@ -7,8 +7,7 @@
 
 package org.usfirst.frc.team6843.robot;
 
-import org.usfirst.frc.team6843.robot.commands.DistDrive;
-import org.usfirst.frc.team6843.robot.commands.DistDriveRev;
+import org.usfirst.frc.team6843.robot.commands.DriveTillCancelled;
 import org.usfirst.frc.team6843.robot.commands.DriveTo;
 import org.usfirst.frc.team6843.robot.commands.RotateTo;
 
@@ -41,8 +40,8 @@ public class OI {
 		driverB.whenPressed(new RotateTo(90.0));
 		driverA.whenPressed(new RotateTo(180.0));
 		driverX.whenPressed(new RotateTo(-90.0));
-		driverBumperLeft.whileHeld(new DistDrive());
-		driverBumperRight.whileHeld(new DistDriveRev());
+		driverBumperLeft.whileHeld(new DriveTillCancelled(true));
+		driverBumperRight.whileHeld(new DriveTillCancelled(false));
 		driverBack.whenPressed(new DriveTo(-100));
 		driverStart.whenPressed(new DriveTo(100));
 	}
