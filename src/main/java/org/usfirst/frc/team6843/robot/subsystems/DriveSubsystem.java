@@ -48,17 +48,20 @@ public class DriveSubsystem extends Subsystem {
 	private final PIDController turnController = new PIDController(0.2, 0.0, 0.0, 0.0, gyro, turnPidOutput);
 
 	/** The target distance in encoder clicks. */
-	private int distTarget = 0;
+	private double distTarget = 0;
 	/** Holds the last PID calculated distance drive velocity. */
 	private double distDriveRate = 0.0;
+	/** A custom PID source for distance control (see {@link DistDrivePIDSource}) */
 	private PIDSource distDriveSource = new DistDrivePIDSource();
+	/** The output target for the distance PID Controller. */
 	private PIDOutput distDriveOutput = new PIDOutput() {
 		@Override
 		public void pidWrite(double output) {
 			distDriveRate = output;
 		}
 	};
-	private final PIDController distController = new PIDController(0.01, 0.0, 0.0, 0.0, distDriveSource,
+	/** The distance PID controller using the above source and output. */
+	private final PIDController distController = new PIDController(0.5, 0.0, 0.0, 0.0, distDriveSource,
 			distDriveOutput);
 
 	private final WPI_TalonSRX leftMotor1 = new WPI_TalonSRX(RobotMap.LEFT_MOTOR_1);
@@ -108,38 +111,93 @@ public class DriveSubsystem extends Subsystem {
 		// leftMotor2.set(ControlMode.Follower, RobotMap.LEFT_MOTOR_1);
 		// rightMotor1.set(ControlMode.PercentOutput, 0.0);
 		// rightMotor2.set(ControlMode.Follower, RobotMap.RIGHT_MOTOR_1);
-		turnController.setInputRange(-180.0f, 180.0f);
+		turnController.setInputRange(-180.0, 180.0);
 		turnController.setOutputRange(-1.0, 1.0);
-		turnController.setAbsoluteTolerance(2.0f);
+		turnController.setAbsoluteTolerance(2.0);
 		turnController.setContinuous(true);
 		turnController.disable();
+
+		distController.setInputRange(-100000.0, 100000.0);
+		distController.setOutputRange(-5000.0, 5000.0);
+		distController.setAbsoluteTolerance(100.0);
+		distController.setContinuous(false);
+		distController.disable();
 	}
 
+	/**
+	 * @return the last calculated gyro controlled turn rate. [-1.0, 1.0]
+	 */
 	public double getGyroTurnRate() {
 		return gyroTurnRate;
 	}
 
+	/**
+	 * @return the current gyro angle (yaw). [-180.0, 180.0]
+	 */
 	public double getGyroAngle() {
 		return gyro.getYaw();
 	}
 
+	/**
+	 * @return true if the turn PID controller reports we are within our turn tolerance.
+	 */
 	public boolean isTurnOnTarget() {
 		return turnController.onTarget();
 	}
 
+	/**
+	 * Used to initiate a gyro/PID controlled turn.
+	 * @param targetAngle the absolute field relative target angle.
+	 */
 	public void startTurn(double targetAngle) {
 		turnController.enable();
 		turnController.setSetpoint(targetAngle);
-
 	}
 
+	/**
+	 * Used to stop (normally or otherwise) a gyro/PID controlled turn.
+	 */
 	public void endTurn() {
 		turnController.reset();
 		this.gyroTurnRate = 0.0;
 	}
 
+	public void startDistance(double distanceInInches)
+	{
+		this.distTarget = distanceInInches / 18.85 * 1440.0;
+		clearEncoders();
+		distController.enable();
+		distController.setSetpoint(this.distTarget);
+	}
+
+	public double getDistDriveRate() {
+		return this.distDriveRate;
+	}
+
+	/**
+	 * @return true if the distance PID controller reports we are within our tolerance.
+	 */
+	public boolean isDistOnTarget() {
+		if (distController.isEnabled())
+		{
+			return distController.onTarget();
+		}
+		return true;
+	}
+
+	public void endDistance() {
+		distController.reset();
+		this.distTarget = 0.0;
+		this.distDriveRate = 0.0;
+	}
+
+	/**
+	 * Updates the dashboard with drive subsystem critical data.
+	 */
 	public void updateDashboard() {
 		SmartDashboard.putNumber("Gyro", gyro.getYaw());
+		SmartDashboard.putNumber("Drive Left Encoder", leftMotor1.getSelectedSensorPosition(0));
+		SmartDashboard.putNumber("Drive Right Encoder", rightMotor1.getSelectedSensorPosition(0));
 	}
 
 	public double getLeftPosition() {
@@ -149,10 +207,12 @@ public class DriveSubsystem extends Subsystem {
 		return leftInchPos;
 	}
 
+	/**
+	 * Resets the left and right encoders to 0 completed clicks.
+	 */
 	public void clearEncoders() {
 		rightMotor1.setSelectedSensorPosition(0, 0, 100);
 		leftMotor1.setSelectedSensorPosition(0, 0, 100);
-
 	}
 
 	public double getRightPosition() {
@@ -170,23 +230,33 @@ public class DriveSubsystem extends Subsystem {
 		return rightMotor1.getSelectedSensorVelocity(0);
 	}
 
+	/**
+	 * Called by the system so that we can establish our default command.
+	 */
+	@Override
 	public void initDefaultCommand() {
 		setDefaultCommand(new JoystickTankDrive());
 	}
 
-	public void velocityDrive(double leftPower, double rightPower) {
-		leftMotor1.set(ControlMode.Velocity, leftPower);
-		rightMotor1.set(ControlMode.Velocity, rightPower);
+	/**
+	 * Used to drive and known left and right velocities via PID.
+	 * @param leftVelocity the velocity for the left side (clicks / sec ?)
+	 * @param rightVelocity the velocity for the right side (clicks / sec ?)
+	 */
+	public void velocityDrive(double leftVelocity, double rightVelocity) {
+		leftMotor1.set(ControlMode.Velocity, leftVelocity);
+		rightMotor1.set(ControlMode.Velocity, rightVelocity);
 	}
 
 	public void arcadeDrive(double power, double curve) {
 		drive.arcadeDrive((-1 * power), (1 * curve));
 	}
 
+	/**
+	 * Convenience method to set velocity to 0.0 on both sides.
+	 */
 	public void stop() {
-		leftMotor1.set(ControlMode.Velocity, 0);
-		rightMotor1.set(ControlMode.Velocity, 0);
-
+		this.velocityDrive(0.0, 0.0);
 	}
 
 	/**
@@ -200,9 +270,11 @@ public class DriveSubsystem extends Subsystem {
 		@Override
 		public double pidGet() {
 			int leftRawPos = leftMotor1.getSelectedSensorPosition(0);
-			int rightRawPos = -rightMotor1.getSelectedSensorPosition(0);
-			int aveRawPos = (leftRawPos + rightRawPos) / 2;
-			return distTarget - aveRawPos;
+			// right broken on old bot ... put back later
+			//int rightRawPos = -rightMotor1.getSelectedSensorPosition(0);
+			//int aveRawPos = (leftRawPos + rightRawPos) / 2;
+			int aveRawPos = leftRawPos;
+			return aveRawPos;
 		}
 
 		@Override

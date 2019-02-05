@@ -9,6 +9,7 @@ package org.usfirst.frc.team6843.robot;
 
 import org.usfirst.frc.team6843.robot.commands.DistDrive;
 import org.usfirst.frc.team6843.robot.commands.DistDriveRev;
+import org.usfirst.frc.team6843.robot.commands.DriveTo;
 import org.usfirst.frc.team6843.robot.commands.RotateTo;
 
 import edu.wpi.first.wpilibj.XboxController;
@@ -32,6 +33,8 @@ public class OI {
 	private final Button driverX = new JoystickButton(driver, 3);
 	private final Button driverBumperLeft = new JoystickButton(driver, 5);
 	private final Button driverBumperRight = new JoystickButton(driver, 6);
+	private final Button driverBack = new JoystickButton(driver, 7);
+	private final Button driverStart = new JoystickButton(driver, 8);
 
 	public OI() {
 		driverY.whenPressed(new RotateTo(0.0));
@@ -40,6 +43,8 @@ public class OI {
 		driverX.whenPressed(new RotateTo(-90.0));
 		driverBumperLeft.whileHeld(new DistDrive());
 		driverBumperRight.whileHeld(new DistDriveRev());
+		driverBack.whenPressed(new DriveTo(-100));
+		driverStart.whenPressed(new DriveTo(100));
 	}
 
 	public double getDrivePower() {
