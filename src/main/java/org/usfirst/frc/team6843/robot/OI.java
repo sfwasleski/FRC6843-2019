@@ -14,6 +14,7 @@ import org.usfirst.frc.team6843.robot.commands.RotateTo;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.buttons.POVButton;
 
 /**
  * This class is the glue that binds the controls on the physical operator
@@ -34,6 +35,10 @@ public class OI {
 	private final Button driverBumperRight = new JoystickButton(driver, 6);
 	private final Button driverBack = new JoystickButton(driver, 7);
 	private final Button driverStart = new JoystickButton(driver, 8);
+	private final Button pov0 = new POVButton(driver, 0);
+	private final Button pov90 = new POVButton(driver, 90);
+	private final Button pov180 = new POVButton(driver, 180);
+	private final Button pov270 = new POVButton(driver, 270);
 
 	public OI() {
 		driverY.whenPressed(new RotateTo(0.0));
@@ -44,6 +49,10 @@ public class OI {
 		driverBumperRight.whileHeld(new DriveTillCancelled(false));
 		driverBack.whenPressed(new DriveTo(-100));
 		driverStart.whenPressed(new DriveTo(100));
+		pov0.whenPressed(new RotateTo(-151.25));
+		pov90.whenPressed(new RotateTo(151.25));
+		pov180.whenPressed(new RotateTo(28.75));
+		pov270.whenPressed(new RotateTo(-28.75));
 	}
 
 	/**

@@ -51,7 +51,7 @@ public class VisionSubsystem extends Subsystem {
       try {
         double calcTurnAngle = 0.0;
         boolean foundAngle = false;
-        //List<MatOfPoint> contours = pipeline.convexHullsOutput();
+        // List<MatOfPoint> contours = pipeline.convexHullsOutput();
         List<MatOfPoint> contours = pipeline.filterContoursOutput();
         if (contours.size() >= 2) {
           SortedSet<LtoRSortableContour> sortedContours = new TreeSet<>();
@@ -60,7 +60,7 @@ public class VisionSubsystem extends Subsystem {
             mop.convertTo(contour_2f, CvType.CV_32FC2);
             RotatedRect rrect = Imgproc.minAreaRect(contour_2f);
             Rect rect = rrect.boundingRect();
-            sortedContours.add(new LtoRSortableContour(mop, contour_2f, rrect, rect));
+            sortedContours.add(new LtoRSortableContour(rrect, rect));
           }
           // Slight chance same x value contours eliminated a target.
           if (sortedContours.size() >= 2) {
@@ -133,15 +133,10 @@ public class VisionSubsystem extends Subsystem {
   }
 
   private static class LtoRSortableContour implements Comparable<LtoRSortableContour> {
-    public final MatOfPoint mop;
-    public final MatOfPoint2f contour_2f;
     public final RotatedRect rrect;
     public final Rect rect;
 
-    public LtoRSortableContour(final MatOfPoint mop, final MatOfPoint2f contour_2f, final RotatedRect rrect,
-        final Rect rect) {
-      this.mop = mop;
-      this.contour_2f = contour_2f;
+    public LtoRSortableContour(final RotatedRect rrect, final Rect rect) {
       this.rrect = rrect;
       this.rect = rect;
     }

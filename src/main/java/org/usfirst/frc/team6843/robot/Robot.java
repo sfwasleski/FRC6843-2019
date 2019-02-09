@@ -90,6 +90,14 @@ public class Robot extends TimedRobot {
 		return this.driveSubsystem;
 	}
 
+	public VisionSubsystem getVisionSubsystem() {
+		if (this.visionSubsystem == null) {
+			throw new IllegalStateException(
+					"Robot.getVisionSubsystem() was called before Robot.robotInit() was called.");
+		}
+		return this.visionSubsystem;
+	}
+
 	@Override
 	public void robotPeriodic() {
 		getDriveSubsystem().updateDashboard();
