@@ -35,7 +35,7 @@ public class DriveSubsystem extends Subsystem {
 	/** Holds the last PID calculated turn rate. */
 	private double gyroTurnRate = 0.0;
 	/** Our NavX MXP gyro used as PID input for turns. */
-	private final AHRS gyro = new AHRS(SPI.Port.kMXP);
+	private final AHRS gyro = new AHRS(SPI.Port.kMXP, (byte)200);
 	/** The output target for the turn PID Controller. */
 	private final PIDOutput turnPidOutput = new PIDOutput() {
 		@Override
@@ -44,7 +44,7 @@ public class DriveSubsystem extends Subsystem {
 		}
 	};
 	/** The turn PID controller using the above gyro and PID output. */
-	private final PIDController turnController = new PIDController(0.2, 0.0, 0.0, 0.0, gyro, turnPidOutput);
+	private final PIDController turnController = new PIDController(0.05, 0.00001, 0.001, 0.0, gyro, turnPidOutput, 0.01);
 
 	/** The target distance in encoder clicks. */
 	private double distTarget = 0;

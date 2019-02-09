@@ -16,10 +16,11 @@ public class RotateTo extends Command {
 
   private final DriveSubsystem driveSubsystem;
   private final double targetHeading;
+  private static final int ON_TARGET_TARGET = 5;
+  private int onTargetCount;
 
   public RotateTo(double targetHeading) {
-    // Use requires() here to declare subsystem dependencies
-    // eg. requires(chassis);
+    super();
     this.driveSubsystem = Robot.getInstance().getDriveSubsystem();
     requires(this.driveSubsystem);
     this.targetHeading = targetHeading;
@@ -29,6 +30,14 @@ public class RotateTo extends Command {
   @Override
   protected void initialize() {
     this.driveSubsystem.startTurn(this.targetHeading);
+    this.onTargetCount = 0;
+    double gyroAngleNow = this.driveSubsystem.getGyroAngle();
+    double diff = this.targetHeading - gyroAngleNow;
+    double absDiff = Math.abs(diff);
+    if (absDiff > 270.0) {
+      absDiff = absDiff - 180.0;
+    }
+    this.setTimeout(absDiff / 90.0);
   }
 
   // Called repeatedly when this Command is scheduled to run
@@ -41,8 +50,19 @@ public class RotateTo extends Command {
   // Make this return true when this Command no longer needs to run execute()
   @Override
   protected boolean isFinished() {
-    return this.driveSubsystem.isTurnOnTarget();
-
+    if (this.isTimedOut()) {
+      return true;
+    }
+    boolean onTarget = this.driveSubsystem.isTurnOnTarget();
+    if (!onTarget) {
+      this.onTargetCount = 0;
+    } else {
+      this.onTargetCount++;
+      if (this.onTargetCount < ON_TARGET_TARGET) {
+        onTarget = false;
+      }
+    }
+    return onTarget;
   }
 
   // Called once after isFinished returns true

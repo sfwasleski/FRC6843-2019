@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import org.usfirst.frc.team6843.robot.commands.DriveTo;
 import org.usfirst.frc.team6843.robot.subsystems.DriveSubsystem;
+import org.usfirst.frc.team6843.robot.subsystems.VisionSubsystem;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
@@ -27,6 +28,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 public class Robot extends TimedRobot {
 	private static Robot INSTANCE;
 
+	private VisionSubsystem visionSubsystem;
 	private DriveSubsystem driveSubsystem;
 	private OI oi;
 	private Logger logger;
@@ -47,6 +49,7 @@ public class Robot extends TimedRobot {
 
 		INSTANCE = this;
 		this.logger = Logger.getLogger(this.getClass().getName());
+		this.visionSubsystem = new VisionSubsystem();
 		this.driveSubsystem = new DriveSubsystem();
 		this.oi = new OI();
 		this.auto_chooser = new SendableChooser<>();
