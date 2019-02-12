@@ -13,6 +13,7 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 
+import org.usfirst.frc.team6843.robot.Robot;
 import org.usfirst.frc.team6843.robot.RobotMap;
 import org.usfirst.frc.team6843.robot.commands.JoystickTankDrive;
 
@@ -35,7 +36,9 @@ public class DriveSubsystem extends Subsystem {
 	/** Holds the last PID calculated turn rate. */
 	private double gyroTurnRate = 0.0;
 	/** Our NavX MXP gyro used as PID input for turns. */
-	private final AHRS gyro = new AHRS(SPI.Port.kMXP, (byte)200);
+	private final AHRS gyro = new AHRS(SPI.Port.kMXP, (byte) 200);
+	/** The source for the turn PID Controller */
+    private final PIDSource turnPidInput = new RotatePIDSource();
 	/** The output target for the turn PID Controller. */
 	private final PIDOutput turnPidOutput = new PIDOutput() {
 		@Override
@@ -44,7 +47,8 @@ public class DriveSubsystem extends Subsystem {
 		}
 	};
 	/** The turn PID controller using the above gyro and PID output. */
-	private final PIDController turnController = new PIDController(0.05, 0.00001, 0.001, 0.0, gyro, turnPidOutput, 0.01);
+	private final PIDController turnController = new PIDController(0.05, 0.00001, 0.001, 0.0, turnPidInput, turnPidOutput,
+			0.01);
 
 	/** The target distance in encoder clicks. */
 	private double distTarget = 0;
@@ -127,10 +131,18 @@ public class DriveSubsystem extends Subsystem {
 	}
 
 	/**
+	 * WARNING: The gyro must only ever be read by this method to ensure that the
+	 * starting heading is handled correctly.
+	 * 
 	 * @return the current gyro angle (yaw). [-180.0, 180.0]
 	 */
 	public double getGyroAngle() {
-		return gyro.getYaw();
+		double gyroYaw = gyro.getYaw();
+		gyroYaw += Robot.getInstance().getStartHeading();
+		if (gyroYaw > 180.0) {
+			gyroYaw -= 360.0;
+		}
+		return gyroYaw;
 	}
 
 	/**
@@ -170,7 +182,8 @@ public class DriveSubsystem extends Subsystem {
 	}
 
 	/**
-	 * @return the last calculated drive straight distance rate [-velocity, +velocity]
+	 * @return the last calculated drive straight distance rate [-velocity,
+	 *         +velocity]
 	 */
 	public double getDistDriveRate() {
 		return this.distDriveRate;
@@ -188,7 +201,8 @@ public class DriveSubsystem extends Subsystem {
 	}
 
 	/**
-	 * Used to stop (normally or otherwise) a PID controlled straight drive distance.
+	 * Used to stop (normally or otherwise) a PID controlled straight drive
+	 * distance.
 	 */
 	public void endDistance() {
 		distController.reset();
@@ -200,7 +214,7 @@ public class DriveSubsystem extends Subsystem {
 	 * Updates the dashboard with drive subsystem critical data.
 	 */
 	public void updateDashboard() {
-		SmartDashboard.putNumber("Gyro", gyro.getYaw());
+		SmartDashboard.putNumber("Gyro", this.getGyroAngle());
 		SmartDashboard.putNumber("Drive Left Encoder", leftMotor1.getSelectedSensorPosition(0));
 		SmartDashboard.putNumber("Drive Right Encoder", rightMotor1.getSelectedSensorPosition(0));
 	}
@@ -276,6 +290,28 @@ public class DriveSubsystem extends Subsystem {
 	 */
 	public void stop() {
 		this.velocityDrive(0.0, 0.0);
+	}
+
+	/**
+	 * A wrapper PID source around the gyro to ensure that only
+	 * {@link DriveSubsystem#getGyroAngle()} ever reads the gyro so as to handle
+	 * starting heading correctly.
+	 */
+	private class RotatePIDSource implements PIDSource {
+		@Override
+		public void setPIDSourceType(PIDSourceType pidSourceType) {
+			DriveSubsystem.this.gyro.setPIDSourceType(pidSourceType);
+		}
+
+		@Override
+		public double pidGet() {
+			return DriveSubsystem.this.getGyroAngle();
+		}
+
+		@Override
+		public PIDSourceType getPIDSourceType() {
+			return DriveSubsystem.this.gyro.getPIDSourceType();
+		}
 	}
 
 	/**
