@@ -29,15 +29,9 @@ public class RotateTo extends Command {
   // Called just before this Command runs the first time
   @Override
   protected void initialize() {
-    this.driveSubsystem.startTurn(this.targetHeading);
+    double absDiff = this.driveSubsystem.startTurn(this.targetHeading);
     this.onTargetCount = 0;
-    double gyroAngleNow = this.driveSubsystem.getGyroAngle();
-    double diff = this.targetHeading - gyroAngleNow;
-    double absDiff = Math.abs(diff);
-    if (absDiff > 270.0) {
-      absDiff = absDiff - 180.0;
-    }
-    this.setTimeout(absDiff / 90.0);
+    this.setTimeout((absDiff / 90.0) + 0.25);
   }
 
   // Called repeatedly when this Command is scheduled to run

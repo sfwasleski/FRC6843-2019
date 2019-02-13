@@ -38,7 +38,7 @@ public class DriveSubsystem extends Subsystem {
 	/** Our NavX MXP gyro used as PID input for turns. */
 	private final AHRS gyro = new AHRS(SPI.Port.kMXP, (byte) 200);
 	/** The source for the turn PID Controller */
-    private final PIDSource turnPidInput = new RotatePIDSource();
+	private final PIDSource turnPidInput = new RotatePIDSource();
 	/** The output target for the turn PID Controller. */
 	private final PIDOutput turnPidOutput = new PIDOutput() {
 		@Override
@@ -47,8 +47,12 @@ public class DriveSubsystem extends Subsystem {
 		}
 	};
 	/** The turn PID controller using the above gyro and PID output. */
-	private final PIDController turnController = new PIDController(0.05, 0.00001, 0.001, 0.0, turnPidInput, turnPidOutput,
-			0.01);
+	private static final double ROTATE_SIZE_THREASHOLD = 20.0;
+	private final PIDController bigRotateController = new PIDController(0.05, 0.00001, 0.001, 0.0, turnPidInput,
+			turnPidOutput, 0.01);
+	private final PIDController smallRotateController = new PIDController(0.1, 0.00001, 0.001, 0.0, turnPidInput,
+			turnPidOutput, 0.01);
+	private PIDController activeRotateController = null;
 
 	/** The target distance in encoder clicks. */
 	private double distTarget = 0;
@@ -64,7 +68,7 @@ public class DriveSubsystem extends Subsystem {
 		}
 	};
 	/** The distance PID controller using the above source and output. */
-	private final PIDController distController = new PIDController(0.5, 0.0, 0.0, 0.0, distDriveSource,
+	private final PIDController distController = new PIDController(0.35, 0.0, 0.0, 0.0, distDriveSource,
 			distDriveOutput);
 
 	private final WPI_TalonSRX leftMotor1 = new WPI_TalonSRX(RobotMap.LEFT_MOTOR_1);
@@ -81,28 +85,28 @@ public class DriveSubsystem extends Subsystem {
 		rightMotor1.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 100);
 		rightMotor1.setSensorPhase(true);
 		// set the peak, nominal outputs, and deadband
-		rightMotor1.configNominalOutputForward(0, 100);
-		rightMotor1.configNominalOutputReverse(0, 100);
-		rightMotor1.configPeakOutputForward(1, 100);
-		rightMotor1.configPeakOutputReverse(-1, 100);
+		rightMotor1.configNominalOutputForward(0);
+		rightMotor1.configNominalOutputReverse(0);
+		rightMotor1.configPeakOutputForward(1);
+		rightMotor1.configPeakOutputReverse(-1);
 		// set closed loop gains in slot0
-		rightMotor1.config_kF(0, .25, 100); // current was .265
-		rightMotor1.config_kP(0, 0.1, 100); // P Value: 0.1
-		rightMotor1.config_kI(0, 0, 100);
-		rightMotor1.config_kD(0, 0, 100);
+		rightMotor1.config_kF(0, .25); // current was .265
+		rightMotor1.config_kP(0, 0.1); // P Value: 0.1
+		rightMotor1.config_kI(0, 0);
+		rightMotor1.config_kD(0, 0);
 
 		leftMotor1.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 100);
 		leftMotor1.setSensorPhase(true);
 		// set the peak, nominal outputs, and deadband
-		leftMotor1.configNominalOutputForward(0, 100);
-		leftMotor1.configNominalOutputReverse(0, 100);
-		leftMotor1.configPeakOutputForward(1, 100);
-		leftMotor1.configPeakOutputReverse(-1, 100);
+		leftMotor1.configNominalOutputForward(0);
+		leftMotor1.configNominalOutputReverse(0);
+		leftMotor1.configPeakOutputForward(1);
+		leftMotor1.configPeakOutputReverse(-1);
 		// set closed loop gains in slot0
-		leftMotor1.config_kF(0, 0.2578, 100);
-		leftMotor1.config_kP(0, 0.1, 100); // P value1: 0.117 value2: .105
-		leftMotor1.config_kI(0, 0, 100);
-		leftMotor1.config_kD(0, 0, 100);
+		leftMotor1.config_kF(0, 0.2578);
+		leftMotor1.config_kP(0, 0.1); // P value1: 0.117 value2: .105
+		leftMotor1.config_kI(0, 0);
+		leftMotor1.config_kD(0, 0);
 
 		leftMotor1.setNeutralMode(NeutralMode.Brake);
 		rightMotor1.setNeutralMode(NeutralMode.Brake);
@@ -110,11 +114,16 @@ public class DriveSubsystem extends Subsystem {
 		// leftMotor2.set(ControlMode.Follower, RobotMap.LEFT_MOTOR_1);
 		// rightMotor1.set(ControlMode.PercentOutput, 0.0);
 		// rightMotor2.set(ControlMode.Follower, RobotMap.RIGHT_MOTOR_1);
-		turnController.setInputRange(-180.0, 180.0);
-		turnController.setOutputRange(-1.0, 1.0);
-		turnController.setAbsoluteTolerance(2.0);
-		turnController.setContinuous(true);
-		turnController.disable();
+		bigRotateController.setInputRange(-180.0, 180.0);
+		bigRotateController.setOutputRange(-1.0, 1.0);
+		bigRotateController.setAbsoluteTolerance(2.0);
+		bigRotateController.setContinuous(true);
+		bigRotateController.disable();
+		smallRotateController.setInputRange(-180.0, 180.0);
+		smallRotateController.setOutputRange(-1.0, 1.0);
+		smallRotateController.setAbsoluteTolerance(2.0);
+		smallRotateController.setContinuous(true);
+		smallRotateController.disable();
 
 		distController.setInputRange(-100000.0, 100000.0);
 		distController.setOutputRange(-5000.0, 5000.0);
@@ -150,24 +159,42 @@ public class DriveSubsystem extends Subsystem {
 	 *         tolerance.
 	 */
 	public boolean isTurnOnTarget() {
-		return turnController.onTarget();
+		if (activeRotateController == null) {
+			return true;
+		}
+		return activeRotateController.onTarget();
 	}
 
 	/**
 	 * Used to initiate a gyro/PID controlled turn.
 	 * 
 	 * @param targetAngle the absolute field relative target angle.
+	 * @return the absolute difference between the target and current [0..180]
 	 */
-	public void startTurn(double targetAngle) {
-		turnController.enable();
-		turnController.setSetpoint(targetAngle);
+	public double startTurn(double targetAngle) {
+		double gyroAngleNow = this.getGyroAngle();
+		double diff = Math.abs(targetAngle - gyroAngleNow); // [0..360]
+		if (diff > 180.0) {
+			diff = Math.abs(diff - 360.0); // [0.. 180]
+		}
+		if (diff < ROTATE_SIZE_THREASHOLD) {
+			activeRotateController = smallRotateController;
+		} else {
+			activeRotateController = bigRotateController;
+		}
+		activeRotateController.enable();
+		activeRotateController.setSetpoint(targetAngle);
+		return diff;
 	}
 
 	/**
 	 * Used to stop (normally or otherwise) a gyro/PID controlled turn.
 	 */
 	public void endTurn() {
-		turnController.reset();
+		if (activeRotateController != null) {
+			activeRotateController.reset();
+		}
+		activeRotateController = null;
 		this.gyroTurnRate = 0.0;
 	}
 
