@@ -32,6 +32,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class DriveSubsystem extends Subsystem {
 	/** Suggested rotate in place velocity base for PID output math. */
 	public static final double ROTATE_VELOCITY_BASE = 1000.0;
+	/** TODO change for real base. */
+	public static final double LEFT_RIGHT_WHEEL_CENTER_TO_CENTER_INCHES = 23.5;
+	/** Ave speed for arc drive. */
+	public static final double ARC_MEAN_SPEED = 2000.0;
+	/** Convert inches to talon native units 1440 / 18.85 */
+	public static final double INCH_TO_CLICKS = 76.39;
+	private double arcLeftSpeed;
+	private double arcRightSpeed;
 
 	/** Holds the last PID calculated turn rate. */
 	private double gyroTurnRate = 0.0;
@@ -68,7 +76,7 @@ public class DriveSubsystem extends Subsystem {
 		}
 	};
 	/** The distance PID controller using the above source and output. */
-	private final PIDController distController = new PIDController(0.35, 0.0, 0.0, 0.0, distDriveSource,
+	private final PIDController distController = new PIDController(0.5, 0.00001, 0.0, 0.0, distDriveSource,
 			distDriveOutput);
 
 	private final WPI_TalonSRX leftMotor1 = new WPI_TalonSRX(RobotMap.LEFT_MOTOR_1);
@@ -82,26 +90,28 @@ public class DriveSubsystem extends Subsystem {
 	 * Creates the components of the subsystem and initialized them all.
 	 */
 	public DriveSubsystem() {
-		rightMotor1.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 100);
+		rightMotor1.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
 		rightMotor1.setSensorPhase(true);
 		// set the peak, nominal outputs, and deadband
-		rightMotor1.configNominalOutputForward(0);
-		rightMotor1.configNominalOutputReverse(0);
+		rightMotor1.configNominalOutputForward(0.1);
+		rightMotor1.configNominalOutputReverse(-0.1);
 		rightMotor1.configPeakOutputForward(1);
 		rightMotor1.configPeakOutputReverse(-1);
+		rightMotor1.configClosedloopRamp(0.25);
 		// set closed loop gains in slot0
 		rightMotor1.config_kF(0, .25); // current was .265
 		rightMotor1.config_kP(0, 0.1); // P Value: 0.1
 		rightMotor1.config_kI(0, 0);
 		rightMotor1.config_kD(0, 0);
 
-		leftMotor1.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 100);
+		leftMotor1.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
 		leftMotor1.setSensorPhase(true);
 		// set the peak, nominal outputs, and deadband
-		leftMotor1.configNominalOutputForward(0);
-		leftMotor1.configNominalOutputReverse(0);
+		leftMotor1.configNominalOutputForward(0.1);
+		leftMotor1.configNominalOutputReverse(-0.1);
 		leftMotor1.configPeakOutputForward(1);
 		leftMotor1.configPeakOutputReverse(-1);
+		rightMotor1.configClosedloopRamp(0.25);
 		// set closed loop gains in slot0
 		leftMotor1.config_kF(0, 0.2578);
 		leftMotor1.config_kP(0, 0.1); // P value1: 0.117 value2: .105
@@ -202,7 +212,7 @@ public class DriveSubsystem extends Subsystem {
 	 * Used to initiate a PID controlled straight drive a distance in inches.
 	 */
 	public void startDistance(double distanceInInches) {
-		this.distTarget = distanceInInches / 18.85 * 1440.0;
+		this.distTarget = distanceInInches * INCH_TO_CLICKS;
 		clearEncoders();
 		distController.enable();
 		distController.setSetpoint(this.distTarget);
@@ -235,6 +245,40 @@ public class DriveSubsystem extends Subsystem {
 		distController.reset();
 		this.distTarget = 0.0;
 		this.distDriveRate = 0.0;
+	}
+
+	/**
+	 * Used to initiate a PID controlled arc drive.
+	 */
+	public void startArc(double leftInches, double rightInches) {
+		this.distTarget = leftInches * INCH_TO_CLICKS;
+		clearEncoders();
+		double meanInches = (leftInches + rightInches) / 2;
+		this.arcLeftSpeed = leftInches / meanInches * ARC_MEAN_SPEED;
+		this.arcRightSpeed = -rightInches / meanInches * ARC_MEAN_SPEED;
+	}
+
+	/**
+	 * @return the left and right arc drive speeds.
+	 */
+	public double[] getArcDriveRates() {
+		return new double[] { this.arcLeftSpeed, this.arcRightSpeed };
+	}
+
+	/**
+	 * @return true if the left side has gone its distance.
+	 */
+	public boolean isArcOnTarget() {
+		return (leftMotor1.getSelectedSensorPosition(0) >= this.distTarget);
+	}
+
+	/**
+	 * Resets the arc speeds to 0.0;
+	 */
+	public void endArc() {
+		this.arcLeftSpeed = 0.0;
+		this.arcRightSpeed = 0.0;
+		this.distTarget = 0.0;
 	}
 
 	/**

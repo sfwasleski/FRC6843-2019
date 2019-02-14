@@ -54,6 +54,8 @@ public class RotateTo extends Command {
       this.onTargetCount++;
       if (this.onTargetCount < ON_TARGET_TARGET) {
         onTarget = false;
+      } else {
+        Robot.getInstance().setLastCompletedRotateTo(this.targetHeading);
       }
     }
     return onTarget;

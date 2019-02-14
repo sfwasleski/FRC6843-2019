@@ -35,6 +35,7 @@ public class Robot extends TimedRobot {
 	private Logger logger;
 	private SendableChooser<StartOrientation> startOrientationChooser;
 	private double startHeading = 0.0;
+	private double lastCompletedRotateTo = 0.0;
 	private SendableChooser<Command> auto_chooser;
 	private Command autonomousCommand;
 
@@ -83,6 +84,20 @@ public class Robot extends TimedRobot {
 		return this.logger;
 	}
 
+	/**
+	 * @return the last reported completed rotate to heading.
+	 */
+	public double getLastCompletedRotateTo() {
+		return this.lastCompletedRotateTo;
+	}
+
+	/**
+	 * @param lastCompletedRotateTo the latest completed rotate to target.
+	 */
+	public void setLastCompletedRotateTo(double lastCompletedRotateTo) {
+		this.lastCompletedRotateTo = lastCompletedRotateTo;
+	}
+
 	public OI getOI() {
 		if (this.oi == null) {
 			throw new IllegalStateException("Robot.getOI() was called before Robot.robotInit() was called.");
@@ -118,6 +133,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void robotPeriodic() {
 		getDriveSubsystem().updateDashboard();
+		getVisionSubsystem().updateDashboard();
 	}
 
 	/**
