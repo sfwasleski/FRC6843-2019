@@ -9,6 +9,7 @@ package org.usfirst.frc.team6843.robot;
 
 import org.usfirst.frc.team6843.robot.commands.ArcToTarget;
 import org.usfirst.frc.team6843.robot.commands.DriveTillCancelled;
+import org.usfirst.frc.team6843.robot.commands.KillAll;
 import org.usfirst.frc.team6843.robot.commands.RotateTo;
 
 import edu.wpi.first.wpilibj.XboxController;
@@ -55,7 +56,8 @@ public class OI {
 
 		//driverBack.whenPressed(new DriveTo(-100));
 		//driverStart.whenPressed(new DriveTo(100));
-		driverBack.whileHeld(new DriveTillCancelled(false));
+		//driverBack.whileHeld(new DriveTillCancelled(false));
+		driverBack.whenPressed(new KillAll());
 		//driverStart.whileHeld(new DriveTillCancelled(true));
 		driverStart.whenPressed(new ArcToTarget());
 	}
