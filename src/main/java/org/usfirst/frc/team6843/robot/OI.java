@@ -8,13 +8,17 @@
 package org.usfirst.frc.team6843.robot;
 
 import org.usfirst.frc.team6843.robot.commands.ArcToTarget;
+import org.usfirst.frc.team6843.robot.commands.CalcDriveToTarget;
 import org.usfirst.frc.team6843.robot.commands.DriveTillCancelled;
+import org.usfirst.frc.team6843.robot.commands.DriveToTarget;
 import org.usfirst.frc.team6843.robot.commands.KillAll;
+import org.usfirst.frc.team6843.robot.commands.ResetGyro;
 import org.usfirst.frc.team6843.robot.commands.RotateTo;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.buttons.POVButton;
 import edu.wpi.first.wpilibj.buttons.Trigger;
 
 /**
@@ -43,6 +47,7 @@ public class OI {
 	private final Button driverStart = new JoystickButton(driver, 8);
 	private final Trigger driverLeftThrottleButton = new ThrottleButton(driver, LEFT_FRONT_THROTTLE);
 	private final Trigger driverRightThrottleButton = new ThrottleButton(driver, RIGHT_FRONT_THROTTLE);
+	private final Button driverPOV90 = new POVButton(driver, 90);
 
 	public OI() {
 		driverY.whenPressed(new RotateTo(0.0));
@@ -59,7 +64,10 @@ public class OI {
 		//driverBack.whileHeld(new DriveTillCancelled(false));
 		driverBack.whenPressed(new KillAll());
 		//driverStart.whileHeld(new DriveTillCancelled(true));
-		driverStart.whenPressed(new ArcToTarget());
+		//driverStart.whenPressed(new ArcToTarget());
+		//driverStart.whenPressed(new CalcDriveToTarget());
+		driverStart.whileHeld(new DriveToTarget());
+		driverPOV90.whenPressed(new ResetGyro());
 	}
 
 	/**

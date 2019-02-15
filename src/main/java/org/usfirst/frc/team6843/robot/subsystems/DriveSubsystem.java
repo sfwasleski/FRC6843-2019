@@ -77,7 +77,10 @@ public class DriveSubsystem extends Subsystem {
 	};
 	/** The distance PID controller using the above source and output. */
 	private final PIDController distController = new PIDController(0.5, 0.00001, 0.0, 0.0, distDriveSource,
-			distDriveOutput);
+			distDriveOutput, 0.01);
+	private final PIDController distSlowController = new PIDController(0.3, 0.00001, 0.0, 0.0, distDriveSource,
+			distDriveOutput, 0.01);
+	private PIDController activeDistController = null;
 
 	private final WPI_TalonSRX leftMotor1 = new WPI_TalonSRX(RobotMap.LEFT_MOTOR_1);
 	// private final WPI_TalonSRX leftMotor2 = new
@@ -140,6 +143,15 @@ public class DriveSubsystem extends Subsystem {
 		distController.setAbsoluteTolerance(100.0);
 		distController.setContinuous(false);
 		distController.disable();
+		distSlowController.setInputRange(-100000.0, 100000.0);
+		distSlowController.setOutputRange(-5000.0, 5000.0);
+		distSlowController.setAbsoluteTolerance(100.0);
+		distSlowController.setContinuous(false);
+		distSlowController.disable();
+	}
+
+	public void resetGyro() {
+		this.gyro.zeroYaw();
 	}
 
 	/**
@@ -214,8 +226,20 @@ public class DriveSubsystem extends Subsystem {
 	public void startDistance(double distanceInInches) {
 		this.distTarget = distanceInInches * INCH_TO_CLICKS;
 		clearEncoders();
-		distController.enable();
-		distController.setSetpoint(this.distTarget);
+		this.distController.enable();
+		this.distController.setSetpoint(this.distTarget);
+		this.activeDistController = this.distController;
+	}
+
+	/**
+	 * Used to initiate a PID controlled straight drive a distance in inches slowly.
+	 */
+	public void startSlowDistance(double distanceInInches) {
+		this.distTarget = distanceInInches * INCH_TO_CLICKS;
+		clearEncoders();
+		this.distSlowController.enable();
+		this.distSlowController.setSetpoint(this.distTarget);
+		this.activeDistController = this.distSlowController;
 	}
 
 	/**
@@ -231,8 +255,8 @@ public class DriveSubsystem extends Subsystem {
 	 *         tolerance.
 	 */
 	public boolean isDistOnTarget() {
-		if (distController.isEnabled()) {
-			return distController.onTarget();
+		if (this.activeDistController.isEnabled()) {
+			return this.activeDistController.onTarget();
 		}
 		return true;
 	}
@@ -242,9 +266,10 @@ public class DriveSubsystem extends Subsystem {
 	 * distance.
 	 */
 	public void endDistance() {
-		distController.reset();
+		this.activeDistController.reset();
 		this.distTarget = 0.0;
 		this.distDriveRate = 0.0;
+		this.activeDistController = null;
 	}
 
 	/**

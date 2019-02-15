@@ -145,6 +145,12 @@ public class VisionSubsystem extends Subsystem {
     }
   }
 
+  public int getTargetPixelHeight() {
+    synchronized (targetDataLock) {
+      return this.targetPixelHeight;
+    }
+  }
+
   public double getTargetInchesDistance() {
     synchronized (targetDataLock) {
       return this.targetInchesDistance;
