@@ -275,8 +275,8 @@ public class DriveSubsystem extends Subsystem {
 	 * Resets the left and right encoders to 0 completed clicks.
 	 */
 	public void clearEncoders() {
-		rightMotor1.setSelectedSensorPosition(0, 0, 100);
-		leftMotor1.setSelectedSensorPosition(0, 0, 100);
+		rightMotor1.setSelectedSensorPosition(0, 0, 0);
+		leftMotor1.setSelectedSensorPosition(0, 0, 0);
 	}
 
 	/**
@@ -370,10 +370,8 @@ public class DriveSubsystem extends Subsystem {
 		@Override
 		public double pidGet() {
 			int leftRawPos = leftMotor1.getSelectedSensorPosition(0);
-			// right broken on old bot ... put back later
-			// int rightRawPos = -rightMotor1.getSelectedSensorPosition(0);
-			// int aveRawPos = (leftRawPos + rightRawPos) / 2;
-			int aveRawPos = leftRawPos;
+			int rightRawPos = -rightMotor1.getSelectedSensorPosition(0);
+			int aveRawPos = (leftRawPos + rightRawPos) / 2;
 			return aveRawPos;
 		}
 

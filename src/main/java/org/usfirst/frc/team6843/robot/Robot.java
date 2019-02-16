@@ -152,8 +152,21 @@ public class Robot extends TimedRobot {
 		}
 	}
 
+	/**
+	 * Used from teleop and auto init to read from chooser.
+	 */
 	private void updateStartingHeading() {
 		StartOrientation orientation = startOrientationChooser.getSelected();
+		this.updateStartingHeading(orientation);
+	}
+
+	/**
+	 * Update the starting orientation. The only reason to use this during a match
+	 * is for a gyro reset.
+	 * 
+	 * @param orientation the new orientation.
+	 */
+	public void updateStartingHeading(StartOrientation orientation) {
 		switch (orientation) {
 		case FORWARD:
 			this.startHeading = 0.0;

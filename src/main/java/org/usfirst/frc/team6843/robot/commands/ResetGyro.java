@@ -21,11 +21,12 @@ public class ResetGyro extends Command {
   }
 
   /**
-   * Reset the gyro yaw.
+   * Reset the gyro yaw and orientation to forward.
    */
   @Override
   protected void initialize() {
     this.driveSubsystem.resetGyro();
+    Robot.getInstance().updateStartingHeading(Robot.StartOrientation.FORWARD);
   }
 
   /**
