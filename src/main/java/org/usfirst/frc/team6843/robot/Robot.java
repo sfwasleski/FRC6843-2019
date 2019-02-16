@@ -44,12 +44,6 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void robotInit() {
-		/*
-		 * m_oi = new OI(); m_chooser.addDefault("Default Auto", new ExampleCommand());
-		 * // chooser.addObject("My Auto", new MyAutoCommand());
-		 * SmartDashboard.putData("Auto mode", m_chooser);
-		 */
-
 		INSTANCE = this;
 		this.logger = Logger.getLogger(this.getClass().getName());
 		this.visionSubsystem = new VisionSubsystem();
@@ -59,8 +53,7 @@ public class Robot extends TimedRobot {
 		this.auto_chooser.setDefaultOption("Drive 3 pts", new DriveTo(50.0));
 		this.auto_chooser.addOption("Drive too far", new DriveTo(100.0));
 		SmartDashboard.putData("Auto Select", this.auto_chooser);
-		// chooser.addObject("My Auto", new MyAutoCommand());
-		// SmartDashboard.putData("Auto mode", auto_chooser);
+
 		this.startOrientationChooser = new SendableChooser<>();
 		this.startOrientationChooser.setDefaultOption("Backward", StartOrientation.BACKWARD);
 		this.startOrientationChooser.addOption("Forward", StartOrientation.FORWARD);

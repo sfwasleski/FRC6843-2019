@@ -3,11 +3,12 @@ package org.usfirst.frc.team6843.robot.commands;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
- * To be on release of same button that runs target approach while held.
+ * To be on release of same button that runs the {@link ApproachTarget} command
+ * whild held.
  */
 public class ResetRotatedToTarget extends Command {
   /**
-   * Remove all running commands from the scheduler.
+   * Indicate that the rotation is needed again from next approach.
    */
   @Override
   protected void initialize() {

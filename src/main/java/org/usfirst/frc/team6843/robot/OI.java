@@ -57,17 +57,14 @@ public class OI {
 		driverBumperRight.whenPressed(new RotateTo(28.75)); // Near right rocket
 		driverRightThrottleButton.whenActive(new RotateTo(151.25)); // Far right rocket
 
-		//driverBack.whenPressed(new DriveTo(-100));
-		//driverStart.whenPressed(new DriveTo(100));
-		//driverBack.whileHeld(new DriveTillCancelled(false));
+		// driverBack.whenPressed(new DriveTo(-100));
+		// driverStart.whenPressed(new DriveTo(100));
+		// driverBack.whileHeld(new DriveTillCancelled(false));
 		driverBack.whenPressed(new KillAll());
-		//driverStart.whileHeld(new DriveTillCancelled(true));
-		//driverStart.whenPressed(new ArcToTarget());
-		//driverStart.whenPressed(new CalcDriveToTarget());
-		//driverStart.whileHeld(new DriveToTarget());
+		// driverStart.whileHeld(new DriveTillCancelled(true));
 		driverStart.whileHeld(new ApproachTarget());
 		driverStart.whenReleased(new ResetRotatedToTarget());
-		driverPOV90.whenPressed(new ResetGyro());
+		driverPOV90.whenPressed(new ResetGyro()); // TODO change to two button trigger
 	}
 
 	/**
@@ -92,6 +89,9 @@ public class OI {
 		return Math.pow(curvePower, 5.0);
 	}
 
+	/**
+	 * A custom trigger to turn a throttle into a button.
+	 */
 	private static class ThrottleButton extends Trigger {
 		private final XboxController stick;
 		private final int axis;

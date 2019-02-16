@@ -15,7 +15,5 @@ package org.usfirst.frc.team6843.robot;
  */
 public class RobotMap {
 	public static final int LEFT_MOTOR_1 = 12;
-//	public static final int LEFT_MOTOR_2 = 2;
 	public static final int RIGHT_MOTOR_1 = 10;
-//	public static final int RIGHT_MOTOR_2 = 4;
 }

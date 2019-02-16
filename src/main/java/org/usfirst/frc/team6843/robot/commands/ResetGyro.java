@@ -6,7 +6,11 @@ import org.usfirst.frc.team6843.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
- * Kill all other running commands.
+ * Point the robot upfield and run this command to reset the yaw. Useful if bad
+ * drift is witeness during a match or while running a long time during testing.
+ * For competition, this should be run using a
+ * {@link org.usfirst.frc.team6843.robot.triggers.TwoButtonTrigger} with one
+ * button from each controller.
  */
 public class ResetGyro extends Command {
   private final DriveSubsystem driveSubsystem;
@@ -17,7 +21,7 @@ public class ResetGyro extends Command {
   }
 
   /**
-   * Remove all running commands from the scheduler.
+   * Reset the gyro yaw.
    */
   @Override
   protected void initialize() {

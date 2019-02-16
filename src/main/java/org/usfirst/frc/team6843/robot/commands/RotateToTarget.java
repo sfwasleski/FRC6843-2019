@@ -14,10 +14,11 @@ import org.usfirst.frc.team6843.robot.subsystems.VisionSubsystem;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
- * The rotation is to the angle to target at initialization. We rotate about the
- * center but the camera is a bit forward. This results in a turn that is a bit
- * wide of the target. However, that is what we want for the subsequent repeated
- * execution of DriveToTarget so as to have a better chance of squaring up.
+ * The rotation is to the vision target angle at initialization. We rotate about
+ * the center but the camera is a bit forward. This results in a turn that is a
+ * bit wide of the target. However, that is what we want for the subsequent
+ * repeated execution of DriveToTarget so as to have a better chance of squaring
+ * up.
  */
 public class RotateToTarget extends Command {
   // Used to distinquish between initial turn time and

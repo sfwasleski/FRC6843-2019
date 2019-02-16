@@ -5,6 +5,9 @@ import org.usfirst.frc.team6843.robot.subsystems.DriveSubsystem;
 
 import edu.wpi.first.wpilibj.command.Command;
 
+/**
+ * Drives to the provided distance. Useful for automated driving.
+ */
 public class DriveTo extends Command {
 
   private final DriveSubsystem driveSubsystem;

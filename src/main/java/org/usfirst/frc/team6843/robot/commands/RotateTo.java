@@ -12,6 +12,12 @@ import org.usfirst.frc.team6843.robot.subsystems.DriveSubsystem;
 
 import edu.wpi.first.wpilibj.command.Command;
 
+/**
+ * Rotates the robot in place to the target angle. There will be many instances
+ * of this command mapped to different buttons, one for each interesting scoring
+ * angle (there are 8 of them). One of these MUST be run before
+ * {@link ApproachTarget}.
+ */
 public class RotateTo extends Command {
   // Used to know last manual rotate to heading
   // when on target approach.
@@ -29,19 +35,19 @@ public class RotateTo extends Command {
     this.targetHeading = targetHeading;
   }
 
-  	/**
-	 * @return the last reported completed rotate to heading.
-	 */
-	public static double getLastCompletedRotateTo() {
-		return RotateTo.lastCompletedRotateTo;
-	}
+  /**
+   * @return the last reported completed rotate to heading.
+   */
+  public static double getLastCompletedRotateTo() {
+    return RotateTo.lastCompletedRotateTo;
+  }
 
-	/**
-	 * @param lastCompletedRotateTo the latest completed rotate to target.
-	 */
-	private static void setLastCompletedRotateTo(double lastCompletedRotateTo) {
-		RotateTo.lastCompletedRotateTo = lastCompletedRotateTo;
-	}
+  /**
+   * @param lastCompletedRotateTo the latest completed rotate to target.
+   */
+  private static void setLastCompletedRotateTo(double lastCompletedRotateTo) {
+    RotateTo.lastCompletedRotateTo = lastCompletedRotateTo;
+  }
 
   // Called just before this Command runs the first time
   @Override
