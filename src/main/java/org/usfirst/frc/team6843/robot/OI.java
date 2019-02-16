@@ -7,12 +7,10 @@
 
 package org.usfirst.frc.team6843.robot;
 
-import org.usfirst.frc.team6843.robot.commands.ArcToTarget;
-import org.usfirst.frc.team6843.robot.commands.CalcDriveToTarget;
-import org.usfirst.frc.team6843.robot.commands.DriveTillCancelled;
-import org.usfirst.frc.team6843.robot.commands.DriveToTarget;
+import org.usfirst.frc.team6843.robot.commands.ApproachTarget;
 import org.usfirst.frc.team6843.robot.commands.KillAll;
 import org.usfirst.frc.team6843.robot.commands.ResetGyro;
+import org.usfirst.frc.team6843.robot.commands.ResetRotatedToTarget;
 import org.usfirst.frc.team6843.robot.commands.RotateTo;
 
 import edu.wpi.first.wpilibj.XboxController;
@@ -66,7 +64,9 @@ public class OI {
 		//driverStart.whileHeld(new DriveTillCancelled(true));
 		//driverStart.whenPressed(new ArcToTarget());
 		//driverStart.whenPressed(new CalcDriveToTarget());
-		driverStart.whileHeld(new DriveToTarget());
+		//driverStart.whileHeld(new DriveToTarget());
+		driverStart.whileHeld(new ApproachTarget());
+		driverStart.whenReleased(new ResetRotatedToTarget());
 		driverPOV90.whenPressed(new ResetGyro());
 	}
 

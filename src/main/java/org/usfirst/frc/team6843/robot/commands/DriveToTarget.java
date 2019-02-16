@@ -36,6 +36,7 @@ public class DriveToTarget extends Command {
   @Override
   protected void execute() {
     double speed = this.driveSubsystem.getDistDriveRate();
+    speed = Math.max(speed, 900.0);
     double targetAngle = this.visionSubsystem.getTargetAngle();
     double p = targetAngle < 0.0 ? 0.02 : 0.01;
     double turnRate = p * targetAngle;

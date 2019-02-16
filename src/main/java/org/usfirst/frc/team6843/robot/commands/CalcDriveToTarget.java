@@ -34,7 +34,7 @@ public class CalcDriveToTarget extends Command {
       this.cancel();
       return;
     }
-    double lastCompletedRotateTo = Robot.getInstance().getLastCompletedRotateTo();
+    double lastCompletedRotateTo = RotateTo.getLastCompletedRotateTo();
     double currentHeading = this.driveSubsystem.getGyroAngle();
     double rotationRelativeHeading = currentHeading - lastCompletedRotateTo; // R
     double absRotationRelativeHeading = Math.abs(rotationRelativeHeading);

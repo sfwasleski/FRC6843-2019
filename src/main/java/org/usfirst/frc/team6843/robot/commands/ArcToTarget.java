@@ -33,7 +33,7 @@ public class ArcToTarget extends Command {
       this.cancel();
       return;
     }
-    double lastCompletedRotateTo = Robot.getInstance().getLastCompletedRotateTo();
+    double lastCompletedRotateTo = RotateTo.getLastCompletedRotateTo();
     double currentHeading = this.driveSubsystem.getGyroAngle();
     double rotationRelativeHeading = currentHeading - lastCompletedRotateTo;
     double angleToTarget = this.visionSubsystem.getTargetAngle();
